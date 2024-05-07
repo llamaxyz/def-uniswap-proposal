@@ -50,7 +50,7 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
     uint256 streamID;
 
     function setUp() public {
-        vm.createSelectFork(MAINNET_RPC_URL, 19_820_072);
+        vm.createSelectFork(MAINNET_RPC_URL, 19_821_461);
 
         // Deploy the DEF Linear Stream Creator contract
         DeployDEFLinearStreamCreator.run();
