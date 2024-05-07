@@ -3,6 +3,9 @@ pragma solidity ^0.8.23;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import { ud60x18 } from "@prb/math/src/UD60x18.sol";
+import { ISablierV2LockupLinear } from "@sablier/v2-core/src/interfaces/ISablierV2LockupLinear.sol";
+import { Broker, LockupLinear } from "@sablier/v2-core/src/types/DataTypes.sol";
 
 import {DeployDEFLinearStreamCreator} from "script/DeployDEFLinearStreamCreator.s.sol";
 import {DEFLinearStreamCreator} from "src/DEFLinearStreamCreator.sol";
@@ -11,15 +14,19 @@ import {IUniswapGoverrnor} from "test/interfaces/IUniswapGovernor.sol";
 contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
     string MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL"); // can't use constant here
 
-    IUniswapGoverrnor UNISWAP_GOVERNOR = IUniswapGoverrnor(0x408ED6354d4973f66138C91495F2f2FCbd8724C3);
-    IERC20 UNISWAP_TOKEN = IERC20(0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984);
+    IUniswapGoverrnor public constant UNISWAP_GOVERNOR = IUniswapGoverrnor(0x408ED6354d4973f66138C91495F2f2FCbd8724C3);
+    address public constant UNISWAP_TIMELOCK = 0x1a9C8182C09F50C8318d769245beA52c32BE35BC;
+    IERC20 public constant UNISWAP_TOKEN = IERC20(0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984);
 
-    uint256 INITIAL_UNI_AMOUNT = 500_000e18;
-    uint256 VESTING_UNI_AMOUNT = 500_000e18;
-    address DEF_COINBASE_CUSTODY_WALLET = 0xb39cb7Eb25CE07470Fb59F7548979Fae0Bb85824;
+    ISablierV2LockupLinear public constant SABLIER_V2_LOCKUP_LINEAR =
+        ISablierV2LockupLinear(0xAFb979d9afAd1aD27C5eFf4E27226E3AB9e5dCC9);
+
+    uint256 public constant INITIAL_UNI_AMOUNT = 500_000e18;
+    uint256 public constant VESTING_UNI_AMOUNT = 500_000e18;
+    address public constant DEF_COINBASE_CUSTODY_WALLET = 0xb39cb7Eb25CE07470Fb59F7548979Fae0Bb85824;
     // TODO: Update this value once the instance has been deployed.
-    address DEF_LLAMA_EXECUTOR = address(0xCAFE);
-    address DEF_LLAMA_ACCOUNT = address(0xdeadbeef);
+    address public constant DEF_LLAMA_EXECUTOR = address(0xCAFE);
+    address public constant DEF_LLAMA_ACCOUNT = address(0xdeadbeef);
 
     string public constant DESCRIPTION = "Defi Eduction Fund Proposal";
 
@@ -134,6 +141,14 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
     // =======================
 
     function test_UniswapDEFProposal() public {
+        uint256 initialUniswapTimelockUNIBalance = UNISWAP_TOKEN.balanceOf(UNISWAP_TIMELOCK);
+        uint256 initialDEFCoinbaseCustodyWalletUNIBalance = UNISWAP_TOKEN.balanceOf(DEF_COINBASE_CUSTODY_WALLET);
+        uint256 initialSablierV2LockupLinearUNIBalance = UNISWAP_TOKEN.balanceOf(address(SABLIER_V2_LOCKUP_LINEAR));
+
         _uniswapExecuteProposal();
+
+        assertEq(UNISWAP_TOKEN.balanceOf(UNISWAP_TIMELOCK), initialUniswapTimelockUNIBalance - (INITIAL_UNI_AMOUNT + VESTING_UNI_AMOUNT));
+        assertEq(UNISWAP_TOKEN.balanceOf(DEF_COINBASE_CUSTODY_WALLET), initialDEFCoinbaseCustodyWalletUNIBalance + INITIAL_UNI_AMOUNT);
+        assertEq(UNISWAP_TOKEN.balanceOf(address(SABLIER_V2_LOCKUP_LINEAR)), initialSablierV2LockupLinearUNIBalance + VESTING_UNI_AMOUNT);
     }
 }
