@@ -171,4 +171,24 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         vm.expectRevert(DEFLinearStreamCreator.OnlyUniswapTimelock.selector);
         defLinearStreamCreator.createStream(uint128(VESTING_UNI_AMOUNT));
     }
+
+    function test_WithdrawFunds() public {
+        _uniswapExecuteProposal();
+
+        // Checking if DEF can withdraw from stream
+        vm.startPrank(DEF_LLAMA_EXECUTOR);
+        // Checking DEF withdrawal over a ~13 month period
+        for (uint256 i = 0; i < 13; i++) {
+            vm.warp(block.timestamp + 30 days);
+
+            uint256 initialDEFLlamaAccountUNIBalance = UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT);
+            uint256 withdrawableAmount = SABLIER_V2_LOCKUP_LINEAR.withdrawableAmountOf(streamID);
+
+            SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_LLAMA_ACCOUNT);
+
+            assertEq(UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT), initialDEFLlamaAccountUNIBalance + withdrawableAmount);
+        }
+
+        assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.DEPLETED));
+    }
 }
