@@ -189,6 +189,7 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
 
             assertEq(UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT), initialDEFLlamaAccountUNIBalance + withdrawableAmount);
         }
+        vm.stopPrank();
 
         assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.DEPLETED));
     }
@@ -198,5 +199,33 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         vm.warp(block.timestamp + 30 days);
         vm.expectRevert(abi.encodeWithSelector(Errors.SablierV2Lockup_Unauthorized.selector, streamID, address(this)));
         SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_LLAMA_ACCOUNT);
+    }
+
+    function test_UniswapTimelockCanClawbackUnvestedFunds() public {
+        _uniswapExecuteProposal();
+
+        vm.warp(block.timestamp + 180 days);
+
+        uint256 initialUniswapTimelockUNIBalance = UNISWAP_TOKEN.balanceOf(UNISWAP_TIMELOCK);
+        uint256 initialDEFLlamaAccountUNIBalance = UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT);
+
+        // Checking if Uniswap Timelock can clawback unvested funds
+        vm.prank(UNISWAP_TIMELOCK);
+        SABLIER_V2_LOCKUP_LINEAR.cancel(streamID);
+
+        uint256 refundedAmount = SABLIER_V2_LOCKUP_LINEAR.getRefundedAmount(streamID);
+        assertEq(UNISWAP_TOKEN.balanceOf(UNISWAP_TIMELOCK), initialUniswapTimelockUNIBalance + refundedAmount);
+        assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.CANCELED));
+
+        // Checking if DEF can withdraw vested funds from stream
+        uint256 withdrawableAmount = SABLIER_V2_LOCKUP_LINEAR.withdrawableAmountOf(streamID);
+        vm.prank(DEF_LLAMA_EXECUTOR);
+        SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_LLAMA_ACCOUNT);
+
+        assertEq(UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT), initialDEFLlamaAccountUNIBalance + withdrawableAmount);
+        assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.DEPLETED));
+
+        // Check that refunded amount + withdrawable amount = total deposited amount
+        assertEq(refundedAmount + withdrawableAmount, VESTING_UNI_AMOUNT);
     }
 }
