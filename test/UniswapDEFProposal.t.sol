@@ -25,9 +25,8 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
     uint256 public constant INITIAL_UNI_AMOUNT = 500_000e18;
     uint256 public constant VESTING_UNI_AMOUNT = 500_000e18;
     address public constant DEF_COINBASE_CUSTODY_WALLET = 0xb39cb7Eb25CE07470Fb59F7548979Fae0Bb85824;
-    // TODO: Update this value once the instance has been deployed.
-    address public constant DEF_LLAMA_EXECUTOR = address(0xCAFE);
-    address public constant DEF_LLAMA_ACCOUNT = address(0xdeadbeef);
+    address public constant DEF_LLAMA_EXECUTOR = 0x54865956Ba372DA101D6AeEeF18d602b77c871a6;
+    address public constant DEF_LLAMA_ACCOUNT = 0x6DFe78325E35a202c619460D1Ed91235E5c0c2A1;
 
     string public constant DESCRIPTION = "Defi Eduction Fund Proposal";
 

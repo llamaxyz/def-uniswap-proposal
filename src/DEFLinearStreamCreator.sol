@@ -13,11 +13,13 @@ import {Broker, LockupLinear} from "@sablier/v2-core/src/types/DataTypes.sol";
 contract DEFLinearStreamCreator {
     /// @notice Uniswap Token
     IERC20 public constant UNI = IERC20(0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984);
+
     /// @notice Stream Canceler: Uniswap Governance
     address public constant UNISWAP_TIMELOCK = 0x1a9C8182C09F50C8318d769245beA52c32BE35BC;
-    // TODO: Update this value once the instance has been deployed.
+
     /// @notice Stream Recipient: Defi Education Fund Llama Executor
-    address public constant DEF_LLAMA_EXECUTOR = address(0xCAFE);
+    address public constant DEF_LLAMA_EXECUTOR = 0x54865956Ba372DA101D6AeEeF18d602b77c871a6;
+    
     /// @notice Sablier LockupLinear contract
     ISablierV2LockupLinear public constant SABLIER_V2_LOCKUP_LINEAR =
         ISablierV2LockupLinear(0xAFb979d9afAd1aD27C5eFf4E27226E3AB9e5dCC9);
