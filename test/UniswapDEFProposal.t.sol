@@ -133,7 +133,7 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
     // ======== Tests ========
     // =======================
 
-    function test_DEFProposal() public {
+    function test_UniswapDEFProposal() public {
         _uniswapExecuteProposal();
     }
 }
