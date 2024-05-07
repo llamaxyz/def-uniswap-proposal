@@ -7,7 +7,6 @@ import {ISablierV2LockupLinear} from "@sablier/v2-core/src/interfaces/ISablierV2
 import {Broker, LockupLinear} from "@sablier/v2-core/src/types/DataTypes.sol";
 
 /// @title DEFLinearStreamCreator
-/// @author Llama (devsdosomething@llama.xyz)
 /// @notice This contract creates a new LockupLinear stream on Sablier for the Defi Education Fund through Uniswap Governance.
 /// @dev This contract needs an approval of `totalAmount` UNI tokens before calling `createStream`.
 contract DEFLinearStreamCreator {
@@ -17,9 +16,9 @@ contract DEFLinearStreamCreator {
     /// @notice Stream Canceler: Uniswap Governance
     address public constant UNISWAP_TIMELOCK = 0x1a9C8182C09F50C8318d769245beA52c32BE35BC;
 
-    /// @notice Stream Recipient: Defi Education Fund Llama Executor
-    address public constant DEF_LLAMA_EXECUTOR = 0x54865956Ba372DA101D6AeEeF18d602b77c871a6;
-    
+    /// @notice Stream Recipient: Defi Education Fund
+    address public constant DEF_RECIPIENT = 0x54865956Ba372DA101D6AeEeF18d602b77c871a6;
+
     /// @notice Sablier LockupLinear contract
     ISablierV2LockupLinear public constant SABLIER_V2_LOCKUP_LINEAR =
         ISablierV2LockupLinear(0xAFb979d9afAd1aD27C5eFf4E27226E3AB9e5dCC9);
@@ -46,7 +45,7 @@ contract DEFLinearStreamCreator {
 
         // Declare the function parameters
         params.sender = UNISWAP_TIMELOCK; // The sender will be able to cancel the stream
-        params.recipient = DEF_LLAMA_EXECUTOR; // The recipient of the streamed assets
+        params.recipient = DEF_RECIPIENT; // The recipient of the streamed assets
         params.totalAmount = totalAmount; // Total amount is the amount inclusive of all fees
         params.asset = UNI; // The streaming asset
         params.cancelable = true; // Whether the stream will be cancelable or not

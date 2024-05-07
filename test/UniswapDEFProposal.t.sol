@@ -25,8 +25,8 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
     uint256 public constant INITIAL_UNI_AMOUNT = 500_000e18;
     uint256 public constant VESTING_UNI_AMOUNT = 500_000e18;
     address public constant DEF_COINBASE_CUSTODY_WALLET = 0xb39cb7Eb25CE07470Fb59F7548979Fae0Bb85824;
-    address public constant DEF_LLAMA_EXECUTOR = 0x54865956Ba372DA101D6AeEeF18d602b77c871a6;
-    address public constant DEF_LLAMA_ACCOUNT = 0x6DFe78325E35a202c619460D1Ed91235E5c0c2A1;
+    address public constant DEF_RECIPIENT = 0x54865956Ba372DA101D6AeEeF18d602b77c871a6;
+    address public constant DEF_ACCOUNT = 0x6DFe78325E35a202c619460D1Ed91235E5c0c2A1;
 
     string public constant DESCRIPTION = "Defi Eduction Fund Proposal";
 
@@ -157,7 +157,7 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
 
         assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.STREAMING));
         assertEq(SABLIER_V2_LOCKUP_LINEAR.getSender(streamID), UNISWAP_TIMELOCK);
-        assertEq(SABLIER_V2_LOCKUP_LINEAR.getRecipient(streamID), DEF_LLAMA_EXECUTOR);
+        assertEq(SABLIER_V2_LOCKUP_LINEAR.getRecipient(streamID), DEF_RECIPIENT);
         assertEq(SABLIER_V2_LOCKUP_LINEAR.getDepositedAmount(streamID), VESTING_UNI_AMOUNT);
         assertEq(address(SABLIER_V2_LOCKUP_LINEAR.getAsset(streamID)), address(UNISWAP_TOKEN));
         assertTrue(SABLIER_V2_LOCKUP_LINEAR.isCancelable(streamID));
@@ -176,17 +176,17 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         _uniswapExecuteProposal();
 
         // Checking if DEF can withdraw vested funds from stream
-        vm.startPrank(DEF_LLAMA_EXECUTOR);
+        vm.startPrank(DEF_RECIPIENT);
         // Checking DEF withdrawal over a ~13 month period
         for (uint256 i = 0; i < 13; i++) {
             vm.warp(block.timestamp + 30 days);
 
-            uint256 initialDEFLlamaAccountUNIBalance = UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT);
+            uint256 initialDEFLlamaAccountUNIBalance = UNISWAP_TOKEN.balanceOf(DEF_ACCOUNT);
             uint256 withdrawableAmount = SABLIER_V2_LOCKUP_LINEAR.withdrawableAmountOf(streamID);
 
-            SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_LLAMA_ACCOUNT);
+            SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_ACCOUNT);
 
-            assertEq(UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT), initialDEFLlamaAccountUNIBalance + withdrawableAmount);
+            assertEq(UNISWAP_TOKEN.balanceOf(DEF_ACCOUNT), initialDEFLlamaAccountUNIBalance + withdrawableAmount);
         }
         vm.stopPrank();
 
@@ -199,7 +199,7 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         vm.warp(block.timestamp + 180 days);
 
         uint256 initialUniswapTimelockUNIBalance = UNISWAP_TOKEN.balanceOf(UNISWAP_TIMELOCK);
-        uint256 initialDEFLlamaAccountUNIBalance = UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT);
+        uint256 initialDEFLlamaAccountUNIBalance = UNISWAP_TOKEN.balanceOf(DEF_ACCOUNT);
 
         // Checking if Uniswap Timelock can clawback unvested funds
         vm.prank(UNISWAP_TIMELOCK);
@@ -211,10 +211,10 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
 
         // Checking if DEF can withdraw vested funds from stream
         uint256 withdrawableAmount = SABLIER_V2_LOCKUP_LINEAR.withdrawableAmountOf(streamID);
-        vm.prank(DEF_LLAMA_EXECUTOR);
-        SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_LLAMA_ACCOUNT);
+        vm.prank(DEF_RECIPIENT);
+        SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_ACCOUNT);
 
-        assertEq(UNISWAP_TOKEN.balanceOf(DEF_LLAMA_ACCOUNT), initialDEFLlamaAccountUNIBalance + withdrawableAmount);
+        assertEq(UNISWAP_TOKEN.balanceOf(DEF_ACCOUNT), initialDEFLlamaAccountUNIBalance + withdrawableAmount);
         assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.DEPLETED));
 
         // Check that refunded amount + withdrawable amount = total deposited amount
