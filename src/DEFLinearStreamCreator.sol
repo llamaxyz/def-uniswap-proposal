@@ -22,7 +22,7 @@ contract DEFLinearStreamCreator {
     ISablierV2LockupLinear public constant LOCKUP_LINEAR =
         ISablierV2LockupLinear(0xAFb979d9afAd1aD27C5eFf4E27226E3AB9e5dCC9);
 
-    function createStream(uint128 totalAmount) public returns (uint256 streamId) {
+    function createStream(uint128 totalAmount) external returns (uint256 streamId) {
         // Transfer the provided amount of UNI tokens to this contract
         UNI.transferFrom(msg.sender, address(this), totalAmount);
 
