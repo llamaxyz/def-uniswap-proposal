@@ -6,6 +6,7 @@ import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {ud60x18} from "@prb/math/src/UD60x18.sol";
 import {ISablierV2LockupLinear} from "@sablier/v2-core/src/interfaces/ISablierV2LockupLinear.sol";
 import {Lockup, LockupLinear} from "@sablier/v2-core/src/types/DataTypes.sol";
+import {Errors} from "@sablier/v2-core/src/libraries/Errors.sol";
 
 import {DeployDEFLinearStreamCreator} from "script/DeployDEFLinearStreamCreator.s.sol";
 import {DEFLinearStreamCreator} from "src/DEFLinearStreamCreator.sol";
@@ -172,7 +173,7 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         defLinearStreamCreator.createStream(uint128(VESTING_UNI_AMOUNT));
     }
 
-    function test_WithdrawFunds() public {
+    function test_WithdrawFundsToDEFLlamaAccount() public {
         _uniswapExecuteProposal();
 
         // Checking if DEF can withdraw from stream
@@ -190,5 +191,12 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         }
 
         assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.DEPLETED));
+    }
+
+    function test_RevertIf_WithdrawerNotRecipient() public {
+        _uniswapExecuteProposal();
+        vm.warp(block.timestamp + 30 days);
+        vm.expectRevert(abi.encodeWithSelector(Errors.SablierV2Lockup_Unauthorized.selector, streamID, address(this)));
+        SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_LLAMA_ACCOUNT);
     }
 }
