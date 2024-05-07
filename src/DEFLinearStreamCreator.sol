@@ -41,7 +41,7 @@ contract DEFLinearStreamCreator {
         params.transferable = false; // Whether the stream will be transferable or not
         params.durations = LockupLinear.Durations({
             cliff: 0, // No cliff
-            total: 52 weeks // Setting a total duration of ~1 year
+            total: 365 days // Setting a total duration of ~1 year
          });
         params.broker = Broker(address(0), ud60x18(0)); // Optional parameter for charging a fee. No fee.
 
