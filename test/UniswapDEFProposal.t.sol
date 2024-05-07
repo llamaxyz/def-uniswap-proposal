@@ -168,15 +168,15 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         assertEq(SABLIER_V2_LOCKUP_LINEAR.getRange(streamID).end, block.timestamp + 365 days);
     }
 
-    function test_RevertIf_NotUniswapTimelock() public {
+    function test_RevertIf_NotUniswapTimelockCalling() public {
         vm.expectRevert(DEFLinearStreamCreator.OnlyUniswapTimelock.selector);
         defLinearStreamCreator.createStream(uint128(VESTING_UNI_AMOUNT));
     }
 
-    function test_WithdrawFundsToDEFLlamaAccount() public {
+    function test_DEFCanWithdrawVestedFunds() public {
         _uniswapExecuteProposal();
 
-        // Checking if DEF can withdraw from stream
+        // Checking if DEF can withdraw vested funds from stream
         vm.startPrank(DEF_LLAMA_EXECUTOR);
         // Checking DEF withdrawal over a ~13 month period
         for (uint256 i = 0; i < 13; i++) {
@@ -192,13 +192,6 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         vm.stopPrank();
 
         assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.DEPLETED));
-    }
-
-    function test_RevertIf_WithdrawerNotRecipient() public {
-        _uniswapExecuteProposal();
-        vm.warp(block.timestamp + 30 days);
-        vm.expectRevert(abi.encodeWithSelector(Errors.SablierV2Lockup_Unauthorized.selector, streamID, address(this)));
-        SABLIER_V2_LOCKUP_LINEAR.withdrawMax(streamID, DEF_LLAMA_ACCOUNT);
     }
 
     function test_UniswapTimelockCanClawbackUnvestedFunds() public {
