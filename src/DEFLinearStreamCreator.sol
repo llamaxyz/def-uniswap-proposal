@@ -17,7 +17,7 @@ contract DEFLinearStreamCreator {
     address public constant UNISWAP_GOV_TIMELOCK = 0x1a9C8182C09F50C8318d769245beA52c32BE35BC;
     // Stream Recipient: Defi Education Fund Llama Executor
     // TODO: Update this value once the instance has been deployed.
-    address public constant DEF_LLAMA_EXECUTOR = address(0xdeadbeef);
+    address public constant DEF_LLAMA_EXECUTOR = address(0xCAFE);
     // Sablier LockupLinear contract
     ISablierV2LockupLinear public constant LOCKUP_LINEAR =
         ISablierV2LockupLinear(0xAFb979d9afAd1aD27C5eFf4E27226E3AB9e5dCC9);
