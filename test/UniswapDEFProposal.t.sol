@@ -3,9 +3,9 @@ pragma solidity ^0.8.23;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
-import { ud60x18 } from "@prb/math/src/UD60x18.sol";
-import { ISablierV2LockupLinear } from "@sablier/v2-core/src/interfaces/ISablierV2LockupLinear.sol";
-import { Broker, LockupLinear } from "@sablier/v2-core/src/types/DataTypes.sol";
+import {ud60x18} from "@prb/math/src/UD60x18.sol";
+import {ISablierV2LockupLinear} from "@sablier/v2-core/src/interfaces/ISablierV2LockupLinear.sol";
+import {Lockup, LockupLinear} from "@sablier/v2-core/src/types/DataTypes.sol";
 
 import {DeployDEFLinearStreamCreator} from "script/DeployDEFLinearStreamCreator.s.sol";
 import {DEFLinearStreamCreator} from "src/DEFLinearStreamCreator.sol";
@@ -45,7 +45,10 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         0x683a4F9915D6216f73d6Df50151725036bD26C02
     ];
 
+    // Proposal ID of the Uniswap Proposal
     uint256 proposalID;
+    // Stream ID of the Sablier Linear Stream
+    uint256 streamID;
 
     function setUp() public {
         vm.createSelectFork(MAINNET_RPC_URL, 19_820_072);
@@ -55,6 +58,9 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
 
         // Run the Uniswap Proposal
         _runUniswapProposal();
+
+        // Get the next stream ID of the Sablier Linear Stream
+        streamID = SABLIER_V2_LOCKUP_LINEAR.nextStreamId();
     }
 
     // =========================
@@ -143,12 +149,21 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
     function test_UniswapDEFProposal() public {
         uint256 initialUniswapTimelockUNIBalance = UNISWAP_TOKEN.balanceOf(UNISWAP_TIMELOCK);
         uint256 initialDEFCoinbaseCustodyWalletUNIBalance = UNISWAP_TOKEN.balanceOf(DEF_COINBASE_CUSTODY_WALLET);
-        uint256 initialSablierV2LockupLinearUNIBalance = UNISWAP_TOKEN.balanceOf(address(SABLIER_V2_LOCKUP_LINEAR));
 
         _uniswapExecuteProposal();
 
         assertEq(UNISWAP_TOKEN.balanceOf(UNISWAP_TIMELOCK), initialUniswapTimelockUNIBalance - (INITIAL_UNI_AMOUNT + VESTING_UNI_AMOUNT));
         assertEq(UNISWAP_TOKEN.balanceOf(DEF_COINBASE_CUSTODY_WALLET), initialDEFCoinbaseCustodyWalletUNIBalance + INITIAL_UNI_AMOUNT);
-        assertEq(UNISWAP_TOKEN.balanceOf(address(SABLIER_V2_LOCKUP_LINEAR)), initialSablierV2LockupLinearUNIBalance + VESTING_UNI_AMOUNT);
+
+        assertEq(uint8(SABLIER_V2_LOCKUP_LINEAR.statusOf(streamID)), uint8(Lockup.Status.STREAMING));
+        assertEq(SABLIER_V2_LOCKUP_LINEAR.getSender(streamID), UNISWAP_TIMELOCK);
+        assertEq(SABLIER_V2_LOCKUP_LINEAR.getRecipient(streamID), DEF_LLAMA_EXECUTOR);
+        assertEq(SABLIER_V2_LOCKUP_LINEAR.getDepositedAmount(streamID), VESTING_UNI_AMOUNT);
+        assertEq(address(SABLIER_V2_LOCKUP_LINEAR.getAsset(streamID)), address(UNISWAP_TOKEN));
+        assertTrue(SABLIER_V2_LOCKUP_LINEAR.isCancelable(streamID));
+        assertFalse(SABLIER_V2_LOCKUP_LINEAR.isTransferable(streamID));
+        assertEq(SABLIER_V2_LOCKUP_LINEAR.getRange(streamID).start, block.timestamp);
+        assertEq(SABLIER_V2_LOCKUP_LINEAR.getRange(streamID).cliff, block.timestamp);
+        assertEq(SABLIER_V2_LOCKUP_LINEAR.getRange(streamID).end, block.timestamp + 365 days);
     }
 }
