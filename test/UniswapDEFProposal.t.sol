@@ -166,4 +166,9 @@ contract UniswapDEFProposalTest is Test,  DeployDEFLinearStreamCreator {
         assertEq(SABLIER_V2_LOCKUP_LINEAR.getRange(streamID).cliff, block.timestamp);
         assertEq(SABLIER_V2_LOCKUP_LINEAR.getRange(streamID).end, block.timestamp + 365 days);
     }
+
+    function test_RevertIf_NotUniswapTimelock() public {
+        vm.expectRevert(DEFLinearStreamCreator.OnlyUniswapTimelock.selector);
+        defLinearStreamCreator.createStream(uint128(VESTING_UNI_AMOUNT));
+    }
 }

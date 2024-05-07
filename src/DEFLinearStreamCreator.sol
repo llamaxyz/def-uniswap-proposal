@@ -11,18 +11,28 @@ import {Broker, LockupLinear} from "@sablier/v2-core/src/types/DataTypes.sol";
 /// @notice This contract creates a new LockupLinear stream on Sablier for the Defi Education Fund through Uniswap Governance.
 /// @dev This contract needs an approval of `totalAmount` UNI tokens before calling `createStream`.
 contract DEFLinearStreamCreator {
-    // Uniswap Token
+    /// @notice Uniswap Token
     IERC20 public constant UNI = IERC20(0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984);
-    // Stream Canceler: Uniswap Governance
+    /// @notice Stream Canceler: Uniswap Governance
     address public constant UNISWAP_TIMELOCK = 0x1a9C8182C09F50C8318d769245beA52c32BE35BC;
-    // Stream Recipient: Defi Education Fund Llama Executor
     // TODO: Update this value once the instance has been deployed.
+    /// @notice Stream Recipient: Defi Education Fund Llama Executor
     address public constant DEF_LLAMA_EXECUTOR = address(0xCAFE);
-    // Sablier LockupLinear contract
+    /// @notice Sablier LockupLinear contract
     ISablierV2LockupLinear public constant SABLIER_V2_LOCKUP_LINEAR =
         ISablierV2LockupLinear(0xAFb979d9afAd1aD27C5eFf4E27226E3AB9e5dCC9);
 
+    /// @dev Thrown when an address other than the Uniswap Timelock tries to call a function.
+    error OnlyUniswapTimelock();
+
+    /// @notice Creates a new LockupLinear stream on Sablier for the Defi Education Fund through Uniswap Governance.
+    /// @param totalAmount The total amount of UNI tokens to be streamed.
+    /// @return streamId The ID of the newly created stream.
     function createStream(uint128 totalAmount) external returns (uint256 streamId) {
+        // Ensure that the caller is the Uniswap Timelock
+        if (msg.sender != UNISWAP_TIMELOCK) {
+            revert OnlyUniswapTimelock();
+        }
         // Transfer the provided amount of UNI tokens to this contract
         UNI.transferFrom(msg.sender, address(this), totalAmount);
 
