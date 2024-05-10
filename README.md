@@ -1,66 +1,41 @@
-## Foundry
+# DEF Uniswap Proposal
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Prerequisites
 
-Foundry consists of:
+[Foundry](https://github.com/foundry-rs/foundry) must be installed.
+You can find installation instructions in the [Foundry docs](https://book.getfoundry.sh/getting-started/installation).
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+We use [just](https://github.com/casey/just) to save and run a few larger, more complex commands.
+You can find installation instructions in the [just docs](https://just.systems/man/en/).
+All commands can be listed by running `just -l` from the repo root, or by viewing the [`justfile`](https://github.com/llamaxyz/def-uniswap-proposal/blob/main/justfile).
 
-## Documentation
+### VS Code
 
-https://book.getfoundry.sh/
+You can get Solidity support for Visual Studio Code by installing the [Hardhat Solidity extension](https://github.com/NomicFoundation/hardhat-vscode).
 
-## Usage
+## Installation
 
-### Build
-
-```shell
-$ forge build
+```sh
+$ git clone https://github.com/llamaxyz/def-uniswap-proposal.git
+$ cd def-uniswap-proposal
+$ forge install
 ```
 
-### Test
+## Setup
 
-```shell
-$ forge test
-```
+Copy `.env.example` and rename it to `.env`.
+The comments in that file explain what each variable is for and when they're needed:
 
-### Format
+- The `MAINNET_RPC_URL` variable is the only one that is required for running tests.
+- You may also want a mainnet `ETHERSCAN_API_KEY` for better traces when running fork tests.
+- The rest are only needed for deployment verification with forge scripts. An anvil default private key is provided in the `.env.example` file to facilitate testing.
 
-```shell
-$ forge fmt
-```
+### Commands
 
-### Gas Snapshots
+- `forge build` - build the project
+- `forge test` - run tests
 
-```shell
-$ forge snapshot
-```
+### Deploy and Verify
 
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+- `just deploy` - deploy and verify payload on mainnet
+- Run `just -l` or see the [`justfile`](https://github.com/llamaxyz/def-uniswap-proposal/blob/main/justfile) for other commands such as dry runs.
