@@ -18,9 +18,9 @@ run-script script_name flags='' sig='' args='':
     -vvvv {{flags}}
   mv _test test
 
-dry-run-deploy: (run-script 'DeployContract')
+dry-run-deploy: (run-script 'DeployDEFLinearStreamCreator')
 
-deploy: (run-script 'DeployContract' '--broadcast --verify --slow --build-info --build-info-path build_info')
+deploy: (run-script 'DeployDEFLinearStreamCreator' '--broadcast --verify --slow --build-info --build-info-path build_info')
 
-verify: (run-script 'DeployContract' '--verify --resume')
+verify: (run-script 'DeployDEFLinearStreamCreator' '--verify --resume')
 
